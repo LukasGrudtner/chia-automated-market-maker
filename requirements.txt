@@ -1,0 +1,3 @@
+aiohttp~=3.7.4
+chia~=2.4.1
+click~=7.1.2
