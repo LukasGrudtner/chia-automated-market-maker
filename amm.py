@@ -1,6 +1,7 @@
 import click
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+from amm import xch, usd, token
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
@@ -22,14 +23,14 @@ def deploy_cmd():
     short_help="Deploy XHC smart coin"
 )
 def deploy_xch_cmd() -> None:
-    pass
+    xch.deploy()
 
 
 @deploy_cmd.command(
-    "usdt",
-    short_help="Deploy USDT smart coin"
+    "usd",
+    short_help="Deploy USD smart coin"
 )
-def deploy_usdt_cmd() -> None:
+def deploy_usd_cmd() -> None:
     pass
 
 
@@ -56,8 +57,8 @@ def deposit_xch_cmd(amount: str) -> None:
 
 
 @deposit_cmd.command(
-    "usdt",
-    short_help="Deposit USDT"
+    "usd",
+    short_help="Deposit USD"
 )
 @click.option(
     "-a",
@@ -65,7 +66,7 @@ def deposit_xch_cmd(amount: str) -> None:
     required=True,
     help="Amount"
 )
-def deposit_usdt_cmd(amount: str) -> None:
+def deposit_usd_cmd(amount: str) -> None:
     pass
 
 
@@ -92,8 +93,8 @@ def withdraw_xch_cmd(amount: str) -> None:
 
 
 @withdraw_cmd.command(
-    "usdt",
-    short_help="Withdraw USDT"
+    "usd",
+    short_help="Withdraw USD"
 )
 @click.option(
     "-a",
@@ -101,7 +102,7 @@ def withdraw_xch_cmd(amount: str) -> None:
     required=True,
     help="Amount"
 )
-def withdraw_usdt_cmd(amount: str) -> None:
+def withdraw_usd_cmd(amount: str) -> None:
     pass
 
 
