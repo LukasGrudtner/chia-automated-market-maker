@@ -1,0 +1,14 @@
+(mod (
+        TRANSACTION_COIN_VERSION
+        coin_id
+        new_amount
+    )
+
+    (include condition_codes.clib)
+
+
+    (list
+        (list ASSERT_COIN_ANNOUNCEMENT (sha256 coin_id new_amount))
+        (list CREATE_PUZZLE_ANNOUNCEMENT (TRANSACTION_COIN_VERSION)
+    )
+)

@@ -1,7 +1,7 @@
 import click
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-from amm import xch, usd, token
+from amm import xch, usd, token, transaction
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
@@ -32,6 +32,20 @@ def deploy_xch_cmd() -> None:
 )
 def deploy_usd_cmd() -> None:
     pass
+
+
+@deploy_cmd.command(
+    "transaction",
+    short_help="Deploy transaction smart coin"
+)
+@click.option(
+    "-a",
+    "--amount",
+    required=True,
+    help="Amount of mojos"
+)
+def deploy_transaction_cmd(amount: str) -> None:
+    transaction.deploy(int(amount))
 
 
 @click.group(
