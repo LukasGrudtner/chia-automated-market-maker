@@ -3,21 +3,55 @@
         my_amount
         new_amount
         my_puzzlehash
+        lender_puzzlehash
     )
 
     (include condition_codes.clib)
 
-    (defun-inline handle_deposit ())
-    (defun-inline handle_conversion ())
-    (defun-inline charge_fee())
-    (defun-inline pay_yield())
-
     (defun-inline recreate_self (my_amount new_amount my_puzzlehash)
-        (list
+        (list 
             (list CREATE_COIN my_puzzlehash new_amount)
             (list ASSERT_MY_AMOUNT my_amount)
             (list ASSERT_MY_PUZZLEHASH my_puzzlehash)
             (list CREATE_COIN_ANNOUNCEMENT new_amount)
         )
+    )
+
+    (defun-inline create_exchange_token (amount lender_puzzlehash)
+        (list
+            (list CREATE_COIN lender_puzzlehash amount)
+            (list ASSERT_MY_AMOUNT amount)
+            (list ASSERT_MY_PUZZLEHASH lender_puzzlehash)
+            (list CREATE_COIN_ANNOUNCEMENT amount)
+        )
+    )
+
+    (defun-inline consume_exchange_token (amount lender_puzzlehash)
+        (list
+            (list ASSERT_MY_AMOUNT amount)
+            (list ASSERT_MY_PUZZLEHASH lender_puzzlehash)
+        )
+    )
+
+    ; deposit
+    (defun-inline handle_deposit(my_amount new_amount lender_puzzlehash)
+        (list
+            (create_exchange_token (- new_amount my_amount) lender_puzzlehash)
+            (recreate_self my_amount new_amount my_puzzlehash)
+        )
+    )
+
+    ; withdraw
+    (defun-inline handle_withdraw(my_amount new_amount lender_puzzlehash)
+        (list
+            (consume_exchange_token (- my_amount new_amount) lender_puzzlehash)
+            (recreate_self my_amount new_amount my_puzzlehash)
+        )
+    )
+
+    ; main
+    (if (> new_amount my_amount)
+        (handle_deposit my_amount new_amount lender_puzzlehash)
+        (handle_withdraw my_amount new_amount lender_puzzlehash)
     )
 )

@@ -11,31 +11,137 @@ def cli(ctx: click.Context) -> None:
 
 
 @click.group(
-    "deploy",
-    short_help="Deploy smart coin"
+    "xch",
+    short_help="XCH smart coin commands"
 )
-def deploy_cmd():
+def xch_cmd():
     pass
 
 
-@deploy_cmd.command(
-    "xch",
+@xch_cmd.command(
+    "deploy",
     short_help="Deploy XHC smart coin"
 )
-def deploy_xch_cmd() -> None:
+def xch_deploy_cmd() -> None:
     xch.deploy()
 
 
-@deploy_cmd.command(
-    "usd",
-    short_help="Deploy USD smart coin"
+@xch_cmd.command(
+    "deposit",
+    short_help="Deposit to XCH smart coin"
 )
-def deploy_usd_cmd() -> None:
+@click.option(
+    "-a",
+    "--amount",
+    required=True,
+    help="Amount of mojos"
+)
+@click.option(
+    "-r",
+    "--receive-address",
+    required=True,
+    help="Receive address"
+)
+def xch_deposit_cmd(amount: str, receive_address: str) -> None:
+    xch.deposit(int(amount), receive_address)
+
+
+@xch_cmd.command(
+    "withdraw",
+    short_help="Withdraw from XCH smart coin"
+)
+@click.option(
+    "-a",
+    "--amount",
+    required=True,
+    help="Amount of mojos"
+)
+def xch_withdraw_cmd() -> None:
     pass
 
 
-@deploy_cmd.command(
+@xch_cmd.command(
+    "show",
+    short_help="Show XCH smart coin information"
+)
+@click.option(
+    "--unspent/--spent",
+    required=False,
+    default=False,
+    help="Filter unspent smart coins"
+)
+def xch_show_cmd(unspent: bool) -> None:
+    xch.show(unspent)
+
+
+@click.group(
+    "usd",
+    short_help="USD smart coin commands"
+)
+def usd_cmd() -> None:
+    pass
+
+
+@usd_cmd.command(
+    "deploy",
+    short_help="Deploy USD smart coin"
+)
+def usd_deploy_cmd() -> None:
+    pass
+
+
+@usd_cmd.command(
+    "deposit",
+    short_help="Deposit to USD smart coin"
+)
+@click.option(
+    "-a",
+    "--amount",
+    required=True,
+    help="Amount of mojos"
+)
+def usd_deposit_cmd() -> None:
+    pass
+
+
+@usd_cmd.command(
+    "withdraw",
+    short_help="Withdraw from USD smart coin"
+)
+@click.option(
+    "-a",
+    "--amount",
+    required=True,
+    help="Amount of mojos"
+)
+def usd_withdraw_cmd() -> None:
+    pass
+
+
+@usd_cmd.command(
+    "show",
+    short_help="Show USD smart coin information"
+)
+@click.option(
+    "--unspent/--spent",
+    required=False,
+    default=False,
+    help="Filter unspent smart coins"
+)
+def usd_show_cmd(unspent: bool) -> None:
+    pass
+
+
+@click.group(
     "transaction",
+    short_help="Transaction smart coin commands"
+)
+def transaction_cmd() -> None:
+    pass
+
+
+@transaction_cmd.command(
+    "deploy",
     short_help="Deploy transaction smart coin"
 )
 @click.option(
@@ -44,85 +150,27 @@ def deploy_usd_cmd() -> None:
     required=True,
     help="Amount of mojos"
 )
-def deploy_transaction_cmd(amount: str) -> None:
+def transaction_deploy_cmd(amount: str) -> None:
     transaction.deploy(int(amount))
 
 
-@click.group(
-    "deposit",
-    short_help="Make a deposit to AMM"
-)
-def deposit_cmd():
-    pass
-
-
-@deposit_cmd.command(
-    "xch",
-    short_help="Deposit XHC"
+@transaction_cmd.command(
+    "show",
+    short_help="Show transaction smart coin information"
 )
 @click.option(
-    "-a",
-    "--amount",
-    required=True,
-    help="Amount"
+    "--unspent/--spent",
+    required=False,
+    default=False,
+    help="Filter unspent smart coins"
 )
-def deposit_xch_cmd(amount: str) -> None:
-    pass
+def transaction_show_cmd(unspent: bool) -> None:
+    transaction.show(unspent)
 
 
-@deposit_cmd.command(
-    "usd",
-    short_help="Deposit USD"
-)
-@click.option(
-    "-a",
-    "--amount",
-    required=True,
-    help="Amount"
-)
-def deposit_usd_cmd(amount: str) -> None:
-    pass
-
-
-@click.group(
-    "withdraw",
-    short_help="Withdraw money from AMM"
-)
-def withdraw_cmd():
-    pass
-
-
-@withdraw_cmd.command(
-    "xch",
-    short_help="Withdraw XHC"
-)
-@click.option(
-    "-a",
-    "--amount",
-    required=True,
-    help="Amount"
-)
-def withdraw_xch_cmd(amount: str) -> None:
-    pass
-
-
-@withdraw_cmd.command(
-    "usd",
-    short_help="Withdraw USD"
-)
-@click.option(
-    "-a",
-    "--amount",
-    required=True,
-    help="Amount"
-)
-def withdraw_usd_cmd(amount: str) -> None:
-    pass
-
-
-cli.add_command(deploy_cmd)
-cli.add_command(deposit_cmd)
-cli.add_command(withdraw_cmd)
+cli.add_command(xch_cmd)
+cli.add_command(usd_cmd)
+cli.add_command(transaction_cmd)
 
 
 def main() -> None:
