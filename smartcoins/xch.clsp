@@ -1,4 +1,5 @@
 (mod (
+        VERSION
         my_amount
         new_amount
         my_puzzlehash
@@ -15,10 +16,14 @@
         )
     )
 
+    ; deposit
+    (defun-inline handle_deposit(my_amount new_amount my_puzzlehash)
+        (recreate_self my_amount new_amount my_puzzlehash)
+    )
+
     ; main
     (if (> new_amount my_amount)
-        (recreate_self my_amount new_amount my_puzzlehash)
+        (handle_deposit my_amount new_amount my_puzzlehash)
         (x)
     )
-    
 )

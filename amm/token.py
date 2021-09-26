@@ -3,35 +3,51 @@ from amm.definitions import *
 import json
 import asyncio
 import time
+from amm import service
 
 
-#TODO: Extract duplicated code
 def deploy():
     clsp.build([TOKEN_PROGRAM], TOKEN_PROGRAM_INCLUDES)
     token_puzzlehash = clsp.curry(program=f'{TOKEN_PROGRAM}.hex',
-                                args=[str(INITIAL_RELATION)],
-                                include=TOKEN_PROGRAM_INCLUDES,
-                                treehash=True)
+                                  args=[str(TOKEN_ID)],
+                                  include=TOKEN_PROGRAM_INCLUDES,
+                                  treehash=True)
+
     save_puzzlehash(token_puzzlehash)
+    save_puzzle_reveal()
+
     token_address = utils.encode(token_puzzlehash, prefix='txch')
     wallet.send(amount=0, target=token_address, override=True)
-    coin_records = fetch_coin_records(token_puzzlehash)
+    coin_records = service.fetch_coin_records(token_puzzlehash)
 
     print('Coin records')
-    print(json.dumps(coin_records, sort_keys=True, indent=4))
-    print('XCH smart coin deployed successfully!')
+    print(json.dumps(coin_records, indent=4))
+    print('Token smart coin deployed successfully!')
     print()
 
 
-def fetch_coin_records(coin_puzzlehash: str, as_name_dict: bool = False) -> dict:
-    coin_records = asyncio.run(rpc.coinrecords([coin_puzzlehash], as_name_dict))
+def generate_coin_spend(amount: int, provider_puzzlehash: str) -> dict:
+    config = load_config()
+    puzzle_reveal = config['puzzle_reveal']
+    # transaction_puzzlehash = config['puzzlehash']
 
-    while len(coin_records) == 0:
-        print('Transaction not confirmed in blockchain yet. Trying again in 10 seconds...')
-        time.sleep(10)
-        coin_records = asyncio.run(rpc.coinrecords([coin_puzzlehash], as_name_dict))
+    token_coin_id, token_coin = service.retrieve_coin_with_amount(provider_puzzlehash, minimum_amount=0)
+    token_coin['parent_coin_info'] = service.remove_suffix(token_coin['parent_coin_info'], '0x')
+    token_coin['puzzle_hash'] = service.remove_suffix(token_coin['puzzle_hash'], '0x')
 
-    return coin_records
+    current_amount = int(token_coin['amount'])
+    new_amount = current_amount + amount
+
+    return {
+        'coin': token_coin,
+        'puzzle_reveal': puzzle_reveal,
+        'solution': clsp.solution([current_amount, new_amount, bytes.fromhex(config['puzzlehash'])])
+    }
+
+
+def show(unspent: bool = False):
+    config = load_config()
+    service.show(config, unspent)
 
 
 def save_puzzlehash(puzzlehash: str):
@@ -40,17 +56,20 @@ def save_puzzlehash(puzzlehash: str):
     save_config(config)
 
 
+def save_puzzle_reveal():
+    puzzle_reveal = clsp.curry(program=TOKEN_PROGRAM,
+                               args=[str(TOKEN_ID)],
+                               include=TOKEN_PROGRAM_INCLUDES,
+                               dump=True)
+
+    config = load_config()
+    config['puzzle_reveal'] = puzzle_reveal
+    save_config(config)
+
+
+def load_config():
+    return service.load_config(path=TOKEN_CONFIG_PATH)
+
+
 def save_config(config: dict) -> None:
-    file = open(TOKEN_CONFIG_PATH, 'w')
-    file.write(json.dumps(config, sort_keys=True, indent=4))
-    file.close()
-
-
-def load_config() -> dict:
-    file = open(TOKEN_CONFIG_PATH, 'r')
-    config = json.loads(file.read())
-    file.close()
-
-    if config is None:
-        return {}
-    return config
+    service.save_config(path=TOKEN_CONFIG_PATH, config=config)

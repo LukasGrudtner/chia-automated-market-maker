@@ -20,17 +20,17 @@ def deploy(amount: int):
     coin_records = service.fetch_coin_records(transaction_puzzlehash)
 
     print('Coin records')
-    print(json.dumps(coin_records, sort_keys=True, indent=4))
+    print(json.dumps(coin_records, indent=4))
     print('Transaction smart coin deployed successfully!')
     print()
 
 
 def generate_coin_spend(amount: int, coin_id: str) -> dict:
-    config = service.load_config(path=TRANSACTION_CONFIG_PATH)
+    config = load_config()
     puzzle_reveal = config['puzzle_reveal']
     transaction_puzzlehash = config['puzzlehash']
 
-    transaction_coin = service.retrieve_coin_with_amount(transaction_puzzlehash, amount)
+    transaction_coin_id, transaction_coin = service.retrieve_coin_with_amount(transaction_puzzlehash, amount)
     transaction_coin['parent_coin_info'] = service.remove_suffix(transaction_coin['parent_coin_info'], '0x')
     transaction_coin['puzzle_hash'] = service.remove_suffix(transaction_coin['puzzle_hash'], '0x')
 
@@ -42,14 +42,14 @@ def generate_coin_spend(amount: int, coin_id: str) -> dict:
 
 
 def show(unspent: bool = False):
-    config = service.load_config(path=XCH_CONFIG_PATH)
+    config = load_config()
     service.show(config, unspent)
 
 
 def save_puzzlehash(puzzlehash: str):
-    config = service.load_config(path=TRANSACTION_CONFIG_PATH)
+    config = load_config()
     config['puzzlehash'] = puzzlehash
-    service.save_config(path=TRANSACTION_CONFIG_PATH, config=config)
+    save_config(config)
 
 
 def save_puzzle_reveal():
@@ -57,6 +57,14 @@ def save_puzzle_reveal():
                                args=[],
                                include=TRANSACTION_PROGRAM_INCLUDES,
                                dump=True)
-    config = service.load_config(path=TRANSACTION_CONFIG_PATH)
+    config = load_config()
     config['puzzle_reveal'] = puzzle_reveal
+    save_config(config)
+
+
+def load_config():
+    return service.load_config(path=TRANSACTION_CONFIG_PATH)
+
+
+def save_config(config: dict) -> None:
     service.save_config(path=TRANSACTION_CONFIG_PATH, config=config)
